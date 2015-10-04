@@ -18,7 +18,7 @@ RUN echo "America/Los_Angeles" > /etc/timezone \
 	&& dpkg-reconfigure -f noninteractive tzdata
 
 # Set Java Environment Variables
-ENV JAVA_VERSION 7
+ENV JAVA_VERSION 8
 ENV JAVA_HOME /usr/lib/jvm/java-${JAVA_VERSION}-oracle
 
 # Set Label
