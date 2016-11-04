@@ -26,7 +26,11 @@ LABEL java_version="Oracle Java $JAVA_VERSION"
 
 # Do NOT Install Recommended/Suggested Packages - https://github.com/sameersbn/docker-ubuntu/blob/master/Dockerfile
 RUN echo 'APT::Install-Recommends 0;' >> /etc/apt/apt.conf.d/01norecommends \
-	&& echo 'APT::Install-Suggests 0;' >> /etc/apt/apt.conf.d/01norecommends
+	&& echo 'APT::Install-Suggests 0;' >> /etc/apt/apt.conf.d/01norecommends \
+	&& echo '#!/bin/bash' > /usr/bin/oom_killer \
+	&& echo 'echo "OOM Killer activated! PID=$PID, PPID=$PPID"' >> /usr/bin/oom_killer \
+	&& echo 'kill -9 $PPID' >> /usr/bin/oom_killer \
+	&& chmod +x /usr/bin/oom_killer
 
 # Install Oracle Java - copied from https://github.com/gratiartis/dockerfiles/blob/master/oraclejdk8/Dockerfile
 RUN apt-get update && apt-get install -y software-properties-common
