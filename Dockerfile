@@ -29,7 +29,7 @@ RUN echo 'APT::Install-Recommends 0;' >> /etc/apt/apt.conf.d/01norecommends \
 	&& echo 'APT::Install-Suggests 0;' >> /etc/apt/apt.conf.d/01norecommends \
 	&& echo '#!/bin/bash' > /usr/bin/oom_killer \
 	&& echo 'echo "`date +"%Y-%m-%d %H:%M:%S.%N"` OOM Killer activated! PID=$PID, PPID=$PPID"' >> /usr/bin/oom_killer \
-	&& echo 'killall5 -9 java' >> /usr/bin/oom_killer \
+	&& echo '/sbin/killall5 -9 java' >> /usr/bin/oom_killer \
 	&& chmod +x /usr/bin/oom_killer
 
 # Install Oracle Java - copied from https://github.com/gratiartis/dockerfiles/blob/master/oraclejdk8/Dockerfile
