@@ -3,7 +3,7 @@
 #
 
 # Pull base image
-FROM ubuntu:14.04
+FROM krallin/ubuntu-tini:trusty
 
 # Set Maintainer Details
 MAINTAINER Zhichun Wu <zhicwu@gmail.com>
