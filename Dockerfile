@@ -15,7 +15,8 @@ ENV LANG="en_US.UTF-8" LANGUAGE="en_US.UTF-8" LC_ALL="en_US.UTF-8" TERM=xterm
 # Set Timezone - see more on https://github.com/docker/docker/issues/12084
 # and http://stackoverflow.com/questions/22800624/will-docker-container-auto-sync-time-with-the-host-machine
 RUN echo "America/Los_Angeles" > /etc/timezone \
-	&& dpkg-reconfigure -f noninteractive tzdata
+	&& dpkg-reconfigure -f noninteractive tzdata \
+	&& ln -sf /usr/share/zoneinfo/America/Los_Angeles /etc/localtime
 
 # Set Java Environment Variables
 ENV JAVA_VERSION 8
