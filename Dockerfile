@@ -5,40 +5,34 @@
 # Pull base image
 FROM phusion/baseimage:latest
 
-# Set Maintainer Details
+# Set maintainer
 MAINTAINER Zhichun Wu <zhicwu@gmail.com>
 
-# Set Locale and General Environment Variables
-RUN locale-gen en_US.UTF-8
-ENV LANG="en_US.UTF-8" LANGUAGE="en_US.UTF-8" LC_ALL="en_US.UTF-8" TERM=xterm
+# Set environment variables
+ENV LANG="en_US.UTF-8" LANGUAGE="en_US.UTF-8" LC_ALL="en_US.UTF-8" TERM=xterm JAVA_VERSION=8 JAVA_HOME=/usr/lib/jvm/java-8-oracle
 
-# Set Timezone - see more on https://github.com/docker/docker/issues/12084
-# and http://stackoverflow.com/questions/22800624/will-docker-container-auto-sync-time-with-the-host-machine
-RUN echo "America/Los_Angeles" > /etc/timezone \
-	&& ln -sf /usr/share/zoneinfo/America/Los_Angeles /etc/localtime \
-	&& dpkg-reconfigure -f noninteractive tzdata
-
-# Set Java Environment Variables
-ENV JAVA_VERSION 8
-ENV JAVA_HOME /usr/lib/jvm/java-${JAVA_VERSION}-oracle
-
-# Set Label
+# Set label
 LABEL java_version="Oracle Java $JAVA_VERSION"
 
-# Do NOT Install Recommended/Suggested Packages - https://github.com/sameersbn/docker-ubuntu/blob/master/Dockerfile
-RUN echo 'APT::Install-Recommends 0;' >> /etc/apt/apt.conf.d/01norecommends \
-	&& echo 'APT::Install-Suggests 0;' >> /etc/apt/apt.conf.d/01norecommends \
-	&& echo '#!/bin/bash' > /usr/bin/oom_killer \
-	&& echo 'set -e' >> /usr/bin/oom_killer \
-        && echo 'echo "`date +"%Y-%m-%d %H:%M:%S.%N"` OOM Killer activated! PID=$PID, PPID=$PPID"' >> /usr/bin/oom_killer \
-        && echo 'ps -auxef' >> /usr/bin/oom_killer \
-        && echo 'for pid in $(jps | grep -v Jps | awk "{print $1}"); do kill -9 $pid; done' >> /usr/bin/oom_killer \
-        && chmod +x /usr/bin/oom_killer
-
-# Install Oracle Java - copied from https://github.com/gratiartis/dockerfiles/blob/master/oraclejdk8/Dockerfile
-RUN apt-get update && apt-get install -y software-properties-common
-RUN add-apt-repository -y ppa:webupd8team/java && apt-get update
-RUN echo oracle-java${JAVA_VERSION}-installer shared/accepted-oracle-license-v1-1 select true \
-	| /usr/bin/debconf-set-selections
-RUN apt-get install -y curl oracle-java${JAVA_VERSION}-installer oracle-java${JAVA_VERSION}-unlimited-jce-policy \
-	&& rm -rf /var/lib/apt/lists/*
+# Configure system(charset and timezone) and install JDK
+RUN locale-gen en_US.UTF-8 \
+		&& echo "America/Los_Angeles" > /etc/timezone \
+		&& ln -sf /usr/share/zoneinfo/America/Los_Angeles /etc/localtime \
+		&& dpkg-reconfigure -f noninteractive tzdata \
+		&& echo 'APT::Install-Recommends 0;' >> /etc/apt/apt.conf.d/01norecommends \
+		&& echo 'APT::Install-Suggests 0;' >> /etc/apt/apt.conf.d/01norecommends \
+		&& echo '#!/bin/bash' > /usr/bin/oom_killer \
+			&& echo 'set -e' >> /usr/bin/oom_killer \
+			&& echo 'echo "`date +"%Y-%m-%d %H:%M:%S.%N"` OOM Killer activated! PID=$PID, PPID=$PPID"' >> /usr/bin/oom_killer \
+			&& echo 'ps -auxef' >> /usr/bin/oom_killer \
+			&& echo 'for pid in $(jps | grep -v Jps | awk "{print $1}"); do kill -9 $pid; done' >> /usr/bin/oom_killer \
+			&& chmod +x /usr/bin/oom_killer \
+		&& add-apt-repository -y ppa:webupd8team/java \
+		&& apt-get update \
+		&& echo oracle-java${JAVA_VERSION}-installer shared/accepted-oracle-license-v1-1 select true \
+				| /usr/bin/debconf-set-selections \
+		&& apt-get install -y --allow-unauthenticated software-properties-common \
+			net-tools curl iputils-ping iotop iftop tcpdump lsof htop iptraf \
+			oracle-java${JAVA_VERSION}-installer oracle-java${JAVA_VERSION}-unlimited-jce-policy \
+		&& apt-get clean \
+		&& rm -rf /var/lib/apt/lists/* /var/cache/oracle-jdk8-installer $JAVA_HOME/*.zip
