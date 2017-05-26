@@ -17,8 +17,6 @@ LABEL java_version="Oracle Java $JAVA_VERSION"
 
 # Configure system(charset and timezone) and install JDK
 RUN locale-gen en_US.UTF-8 \
-		&& echo "America/Los_Angeles" > /etc/timezone \
-		&& ln -sf /usr/share/zoneinfo/America/Los_Angeles /etc/localtime \
 		&& echo 'APT::Install-Recommends 0;' >> /etc/apt/apt.conf.d/01norecommends \
 		&& echo 'APT::Install-Suggests 0;' >> /etc/apt/apt.conf.d/01norecommends \
 		&& echo '#!/bin/bash' > /usr/bin/oom_killer \
@@ -29,7 +27,9 @@ RUN locale-gen en_US.UTF-8 \
 			&& chmod +x /usr/bin/oom_killer \
 		&& add-apt-repository -y ppa:webupd8team/java \
 		&& apt-get update \
-		&& apt-get install -y tzdata \
+		&& apt-get install -y tzdata wget \
+		&& echo "America/Los_Angeles" > /etc/timezone \
+		&& ln -sf /usr/share/zoneinfo/America/Los_Angeles /etc/localtime \
 		&& dpkg-reconfigure -f noninteractive tzdata \
 		&& wget -O ${JMX_EXPORTER_FILE} http://central.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/${JMX_EXPORTER_VERSION}/jmx_prometheus_javaagent-${JMX_EXPORTER_VERSION}.jar \
 		&& echo oracle-java${JAVA_VERSION}-installer shared/accepted-oracle-license-v1-1 select true \
