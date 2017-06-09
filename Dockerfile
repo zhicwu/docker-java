@@ -3,7 +3,7 @@
 #
 
 # Pull base image
-FROM phusion/baseimage:latest
+FROM phusion/baseimage:0.9.22
 
 # Set maintainer
 MAINTAINER Zhichun Wu <zhicwu@gmail.com>
@@ -27,15 +27,12 @@ RUN locale-gen en_US.UTF-8 \
 			&& chmod +x /usr/bin/oom_killer \
 		&& add-apt-repository -y ppa:webupd8team/java \
 		&& apt-get update \
-		&& apt-get install -y tzdata wget \
-		&& echo "America/Los_Angeles" > /etc/timezone \
-		&& ln -sf /usr/share/zoneinfo/America/Los_Angeles /etc/localtime \
-		&& dpkg-reconfigure -f noninteractive tzdata \
-		&& wget -O ${JMX_EXPORTER_FILE} http://central.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/${JMX_EXPORTER_VERSION}/jmx_prometheus_javaagent-${JMX_EXPORTER_VERSION}.jar \
 		&& echo oracle-java${JAVA_VERSION}-installer shared/accepted-oracle-license-v1-1 select true \
 				| /usr/bin/debconf-set-selections \
 		&& apt-get install -y --allow-unauthenticated software-properties-common \
-			net-tools curl iputils-ping iotop iftop tcpdump lsof htop iptraf \
+			wget tzdata net-tools curl iputils-ping iotop iftop tcpdump lsof htop iptraf \
 			oracle-java${JAVA_VERSION}-installer oracle-java${JAVA_VERSION}-unlimited-jce-policy \
+		&& printf '12\n10\n' | dpkg-reconfigure -f noninteractive tzdata \
+		&& wget -O ${JMX_EXPORTER_FILE} http://central.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/${JMX_EXPORTER_VERSION}/jmx_prometheus_javaagent-${JMX_EXPORTER_VERSION}.jar \
 		&& apt-get clean \
 		&& rm -rf /var/lib/apt/lists/* /var/cache/oracle-jdk8-installer $JAVA_HOME/*.zip
