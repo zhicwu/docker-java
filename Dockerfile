@@ -10,7 +10,7 @@ MAINTAINER Zhichun Wu <zhicwu@gmail.com>
 
 # Set environment variables
 ENV LANG="en_US.UTF-8" LANGUAGE="en_US.UTF-8" LC_ALL="en_US.UTF-8" TERM=xterm \
-	JAVA_VERSION=8 JAVA_HOME=/usr/lib/jvm/java-8-oracle
+	JAVA_VERSION=9 JAVA_MINOR_VERSION=181 JAVA_HOME=/usr/lib/jvm/java-9-oracle
 
 # Set label
 LABEL java_version="Oracle Java $JAVA_VERSION"
@@ -25,14 +25,18 @@ RUN locale-gen en_US.UTF-8 \
 			&& echo 'ps -auxef' >> /usr/bin/oom_killer \
 			&& echo 'for pid in $(jps | grep -v Jps | awk '"'"'{print $1}'"'"'); do kill -9 $pid || true; done' >> /usr/bin/oom_killer \
 			&& chmod +x /usr/bin/oom_killer \
-		&& add-apt-repository -y ppa:webupd8team/java \
 		&& apt-get update \
-		&& echo oracle-java${JAVA_VERSION}-installer shared/accepted-oracle-license-v1-1 select true \
-				| /usr/bin/debconf-set-selections \
 		&& apt-get install -y --allow-unauthenticated software-properties-common \
 			wget tzdata net-tools curl iputils-ping iotop iftop tcpdump lsof htop iptraf \
-			oracle-java${JAVA_VERSION}-installer oracle-java${JAVA_VERSION}-unlimited-jce-policy \
 		&& printf '12\n10\n' | dpkg-reconfigure -f noninteractive tzdata \
 		&& apt-get clean \
-		&& sed -i -e 's|.*\(networkaddress.cache.ttl\)=.*|\1=30|' ${JAVA_HOME}/jre/lib/security/java.security \
-		&& rm -rf /var/lib/apt/lists/* /var/cache/oracle-jdk8-installer $JAVA_HOME/*.zip
+		&& curl -jksSLH "Cookie: oraclelicense=accept-securebackup-cookie" -o java.tar.gz \
+			http://download.oracle.com/otn-pub/java/jdk/${JAVA_VERSION}+${JAVA_MINOR_VERSION}/jdk-${JAVA_VERSION}_linux-x64_bin.tar.gz \
+		&& mkdir -p ${JAVA_HOME} \
+		&& tar zxf java.tar.gz \
+		&& mv jdk-${JAVA_VERSION}/* ${JAVA_HOME}/. \
+		&& for b in /usr/lib/jvm/java-9-oracle/bin/*; \
+			do c=`echo $b|sed -e "s|${JAVA_HOME}/bin/||"` && update-alternatives --install "/usr/bin/$c" "$c" "$b" 1091; done \
+		&& sed -i -e 's|.*\(networkaddress.cache.ttl\)=.*|\1=30|' \
+			-e 's|.*\(crypto.policy\)=.*|\1=unlimited|' ${JAVA_HOME}/conf/security/java.security \ 
+		&& rm -rf jdk* *.tar.gz /var/lib/apt/lists/* ${JAVA_HOME}/lib/*.zip
