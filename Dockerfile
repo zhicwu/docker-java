@@ -34,4 +34,5 @@ RUN locale-gen en_US.UTF-8 \
 			oracle-java${JAVA_VERSION}-installer oracle-java${JAVA_VERSION}-unlimited-jce-policy \
 		&& printf '12\n10\n' | dpkg-reconfigure -f noninteractive tzdata \
 		&& apt-get clean \
+		&& sed -i -e 's|.*\(networkaddress.cache.ttl\)=.*|\1=30|' ${JAVA_HOME}/jre/lib/security/java.security \
 		&& rm -rf /var/lib/apt/lists/* /var/cache/oracle-jdk8-installer $JAVA_HOME/*.zip
